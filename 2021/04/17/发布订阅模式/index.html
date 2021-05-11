@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+
+
+  <meta name="keywords" content="js,设计模式," />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="陆林川的博客" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="用例发布订阅模式是比较常见的设计模式，按照现实世界的例子，关注了一个博主，那么当他发微博的时候，你就能收到这个消息。不过你不是直接找的博主来给你发消息，博主也不是直接发给你一个人，而是通过微博这个平台来做发布和订阅，你可以订阅不同的博主，博主一发，所有他的关注者都会收到消息。你可以选择取消订阅这个博主，之后不会再收到这个博主的更新。 12345678910111213eventbus &#x3D; new">
+<meta property="og:type" content="article">
+<meta property="og:title" content="发布订阅模式">
+<meta property="og:url" content="http://example.com/2021/04/17/%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="陆林川的博客">
+<meta property="og:description" content="用例发布订阅模式是比较常见的设计模式，按照现实世界的例子，关注了一个博主，那么当他发微博的时候，你就能收到这个消息。不过你不是直接找的博主来给你发消息，博主也不是直接发给你一个人，而是通过微博这个平台来做发布和订阅，你可以订阅不同的博主，博主一发，所有他的关注者都会收到消息。你可以选择取消订阅这个博主，之后不会再收到这个博主的更新。 12345678910111213eventbus &#x3D; new">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-04-16T16:27:50.000Z">
+<meta property="article:modified_time" content="2021-04-17T06:19:30.835Z">
+<meta property="article:author" content="陆林川">
+<meta property="article:tag" content="js">
+<meta property="article:tag" content="设计模式">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":true},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/04/17/发布订阅模式/"/>
+
+
+
+
+
+  <title>发布订阅模式 | 陆林川的博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">陆林川的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">我是我过去的总和</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/04/17/%E5%8F%91%E5%B8%83%E8%AE%A2%E9%98%85%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="陆林川的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">发布订阅模式</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-04-17T00:27:50+08:00">
+                2021-04-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" itemprop="url" rel="index">
+                    <span itemprop="name">设计模式</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="用例"><a href="#用例" class="headerlink" title="用例"></a>用例</h1><p>发布订阅模式是比较常见的设计模式，按照现实世界的例子，关注了一个博主，那么当他发微博的时候，你就能收到这个消息。不过你不是直接找的博主来给你发消息，博主也不是直接发给你一个人，而是通过微博这个平台来做发布和订阅，你可以订阅不同的博主，博主一发，所有他的关注者都会收到消息。你可以选择取消订阅这个博主，之后不会再收到这个博主的更新。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">eventbus = <span class="keyword">new</span> Eventbus()</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> evTag = eventbus.$on(<span class="string">&#x27;update&#x27;</span>, <span class="function">(<span class="params">name, age</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Hi <span class="subst">$&#123;name&#125;</span>, you are <span class="subst">$&#123;age&#125;</span> years old.`</span>)</span><br><span class="line">&#125;) <span class="comment">// 订阅</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> evTag2 = eventbus.$on(<span class="string">&#x27;update&#x27;</span>, <span class="function">(<span class="params">name, age</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Hello <span class="subst">$&#123;name&#125;</span>, are you <span class="subst">$&#123;age&#125;</span> years old?`</span>)</span><br><span class="line">&#125;) <span class="comment">// 另一份订阅</span></span><br><span class="line"></span><br><span class="line">eventbus.$emit(<span class="string">&#x27;update&#x27;</span>, <span class="string">&#x27;Tim&#x27;</span>, <span class="number">18</span>) <span class="comment">// 发布</span></span><br><span class="line"></span><br><span class="line">eventbus.$off(evTag) <span class="comment">// 解除订阅</span></span><br></pre></td></tr></table></figure>
+<span id="more"></span>
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><ul>
+<li><code>$on</code>接受两个参数，第一个是事件名称，第二个是到时候执行的对应函数，并且返回一个标志，后面可以用这个标志取消订阅。并且可以多次监听同一个事件，彼此不会影响。</li>
+<li><code>$emit</code>就可以接受不定数量的参数，但是第一个是要发布的事件，后面的就是跟着发出去的参数，其实也可以用一个对象来传递，而不是拆成好几个</li>
+<li><code>$off</code>只接受<code>$on</code>时返回的标志，用来取消掉订阅</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Eventbus</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="title">constructor</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.eventList = &#123;&#125; <span class="comment">// 维护一个空列表，总体结构如下</span></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * &#123; </span></span><br><span class="line"><span class="comment">         *   eventName1: &#123;</span></span><br><span class="line"><span class="comment">         *      evTag: callback,</span></span><br><span class="line"><span class="comment">         *      evTag2: callback2,</span></span><br><span class="line"><span class="comment">         *   &#125;,</span></span><br><span class="line"><span class="comment">         *   eventName2: &#123;</span></span><br><span class="line"><span class="comment">         *      evTag3: callback3,</span></span><br><span class="line"><span class="comment">         *      evTag4: callback4,</span></span><br><span class="line"><span class="comment">         *   &#125;</span></span><br><span class="line"><span class="comment">         * &#125;</span></span><br><span class="line"><span class="comment">         * </span></span><br><span class="line"><span class="comment">         * */</span></span><br><span class="line">        <span class="built_in">this</span>.evTag = <span class="number">0</span> <span class="comment">// $on返回标志，也是一个内部计数器</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@description </span>发起一个监听</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param </span>String eventName 事件名称</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param </span>Function&#125; callback 回调函数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return </span>Number 返回此次订阅的标志，后面可以用这个标志来解除此次订阅</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    $on(eventName, callback) &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">this</span>.eventList[eventName]) &#123;</span><br><span class="line">            <span class="built_in">this</span>.eventList[eventName][<span class="built_in">this</span>.evTag] = callback</span><br><span class="line">        &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="built_in">this</span>.eventList[eventName] = &#123;</span><br><span class="line">                [<span class="built_in">this</span>.evTag]: callback</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.evTag++</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@description </span>发起一次发布</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param </span>String eventName 此次发布的事件名称</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param </span>Any args 需要传递的参数，注意此处用...来收集剩余的参数到一个数组args中</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    $emit(eventName, ...args) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.eventList[eventName]) &#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">let</span> i <span class="keyword">in</span> <span class="built_in">this</span>.eventList[eventName]) &#123;</span><br><span class="line">                <span class="built_in">this</span>.eventList[eventName][i](...args)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@description </span>解除一个订阅</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param </span>Number evTag 需要解除的订阅标志</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    $off(evTag) &#123;</span><br><span class="line">        <span class="keyword">let</span> done = <span class="literal">false</span></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">let</span> i <span class="keyword">in</span> <span class="built_in">this</span>.eventList) &#123;</span><br><span class="line">            <span class="keyword">if</span> (done) <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">let</span> j <span class="keyword">in</span> i) &#123;</span><br><span class="line">                <span class="keyword">if</span>(j == evTag) &#123;</span><br><span class="line">                    <span class="keyword">delete</span> <span class="built_in">this</span>.eventList[i][j]</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">eventbus = <span class="keyword">new</span> Eventbus()</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> evTag = eventbus.$on(<span class="string">&#x27;update&#x27;</span>, <span class="function">(<span class="params">name, age</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Hi <span class="subst">$&#123;name&#125;</span>, you are <span class="subst">$&#123;age&#125;</span> years old.`</span>)</span><br><span class="line">&#125;) <span class="comment">// 订阅</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> evTag2 = eventbus.$on(<span class="string">&#x27;update&#x27;</span>, <span class="function">(<span class="params">name, age</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`Hello <span class="subst">$&#123;name&#125;</span>, are you <span class="subst">$&#123;age&#125;</span> years old?`</span>)</span><br><span class="line">&#125;) <span class="comment">// 另一份订阅</span></span><br><span class="line"></span><br><span class="line">eventbus.$emit(<span class="string">&#x27;update&#x27;</span>, <span class="string">&#x27;Tim&#x27;</span>, <span class="number">18</span>) <span class="comment">// 发布</span></span><br><span class="line"></span><br><span class="line">eventbus.$off(evTag) <span class="comment">// 解除订阅</span></span><br><span class="line"></span><br><span class="line">eventbus.$emit(<span class="string">&#x27;update&#x27;</span>, <span class="string">&#x27;Alice&#x27;</span>, <span class="number">18</span>) <span class="comment">// 发布</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Hi Tim, you are 18 years old.</span></span><br><span class="line"><span class="comment">// Hello Tim, are you 18 years old?</span></span><br><span class="line"><span class="comment">// Hello Alice, are you 18 years old?</span></span><br></pre></td></tr></table></figure>
+<p>可以看到有两次关于<code>Tim</code>的信息，但是已有一份<code>Alice</code>的信息，那是因为有一份订阅被解除了</p>
+<h1 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h1><p>代码解藕，发布和订阅的双方都只需要关注自己的代码就行，不需要关心谁发布的这个消息，或者是谁订阅了这个消息</p>
+<h1 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h1><ul>
+<li>一旦事件多了，就会很乱，相信都有过被满天飞的<code>eventbus</code>支配的恐惧，就像有无数的饿狼在黑暗中盯着你，一动他就扑上来</li>
+<li>，因为需要各个执行回调,所以事件多了之后，性能也会收到影响</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/js/" rel="tag"># js</a>
+          
+            <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/04/16/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAlazyman/" rel="next" title="实现一个lazyman">
+                <i class="fa fa-chevron-left"></i> 实现一个lazyman
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/04/17/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F/" rel="prev" title="观察者模式">
+                观察者模式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/lulinchuanllc" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:lulinchuanllc@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://leetcode-cn.com/u/lulinchuan/" target="_blank" title="Leetcode">
+                      
+                        <i class="fa fa-fw fa-code"></i>Leetcode</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%94%A8%E4%BE%8B"><span class="nav-number">1.</span> <span class="nav-text">用例</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">缺点</span></a></li></ol></div>
+            
+
+          </div>
+          <div id="qr-code"></div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陆林川</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <script src="/js/src/copy-code.js"></script>
+  <script src="/lib/qr-code/qrcode.min.js"></script>
+  <script src="/js/src/generate-qr-code.js"></script>
+</body>
+</html>
